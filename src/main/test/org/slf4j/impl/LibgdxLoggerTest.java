@@ -27,6 +27,8 @@ class LibgdxLoggerTest {
         Gdx.app = new DummyLogApplication();
         Gdx.app.setApplicationLogger(new LwjglApplicationLogger());
 
+        LibgdxLogger.PROPERTIES_FILE_HANDLE = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE);
+
         //delete alt properties file
         FileHandle propFile = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE);
         if (propFile.exists()) {

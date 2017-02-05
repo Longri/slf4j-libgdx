@@ -139,8 +139,10 @@ import java.util.Properties;
  */
 public class LibgdxLogger extends MarkerIgnoringBase {
 
+    public static FileHandle PROPERTIES_FILE_HANDLE;
+
     private static final long serialVersionUID = -632788891211436180L;
-    static final String CONFIGURATION_FILE = "libgdxlogger.properties";
+    public static final String CONFIGURATION_FILE = "libgdxlogger.properties";
 
     private static long START_TIME = System.currentTimeMillis();
     private static final Properties SIMPLE_LOGGER_PROPS = new Properties();
@@ -251,17 +253,19 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
         // create log file
         if (LOG_FILE != null && !LOG_FILE.equals("System.err")) {
-            logFile = Gdx.files.local(LOG_FILE);
+            logFile = PROPERTIES_FILE_HANDLE.parent().child(LOG_FILE);
         } else {
             logFile = null;
         }
     }
 
+    FileHandle handle = Gdx.files.local(CONFIGURATION_FILE);
+
     private static void loadProperties() {
         // Add props from the resource simplelogger.properties
-        FileHandle handle = Gdx.files.local(CONFIGURATION_FILE);
-        if (handle.exists()) {
-            InputStream in = handle.read();
+
+        if (PROPERTIES_FILE_HANDLE.exists()) {
+            InputStream in = PROPERTIES_FILE_HANDLE.read();
             try {
                 SIMPLE_LOGGER_PROPS.load(in);
                 in.close();

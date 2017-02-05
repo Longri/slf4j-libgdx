@@ -16,9 +16,6 @@
 package de.longri.cachebox3.utils.lists;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -31,7 +28,6 @@ import java.util.Iterator;
  * @author Longri, based on FloatArray from Nathan Sweet (LibGdx)
  */
 public class CB_List<T> implements Serializable, Iterable<T> {
-    final static Logger log = LoggerFactory.getLogger(CB_List.class);
     private static final long serialVersionUID = 4378819539487000418L;
     protected T[] items;
     protected int size;
@@ -380,7 +376,7 @@ public class CB_List<T> implements Serializable, Iterable<T> {
         try {
             Arrays.sort(items, 0, size);
         } catch (Exception e) {
-            log.error("Sort", e);
+
         }
     }
 
