@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.libgdx.LoggerConfig;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -62,14 +63,14 @@ class LibgdxLoggerTest {
         LibgdxLogger libgdxLogger = (LibgdxLogger) log;
 
         // with default values
-        assertThat("Wrong default value LOG_FILE", LibgdxLogger.LOG_FILE.equals("System.err"));
-        assertThat("Wrong default value  DEFAULT_LOG_LEVEL ", LibgdxLogger.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_DEBUG);
-        assertThat("Wrong default value  SHOW_LOG_NAME ", LibgdxLogger.SHOW_LOG_NAME == true);
-        assertThat("Wrong default value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.SHOW_SHORT_LOG_NAME == false);
-        assertThat("Wrong default value  SHOW_DATE_TIME ", LibgdxLogger.SHOW_DATE_TIME == true);
-        assertThat("Wrong default value  SHOW_THREAD_NAME ", LibgdxLogger.SHOW_THREAD_NAME == true);
-        assertThat("Wrong default value  DATE_TIME_FORMAT_STR ", LibgdxLogger.DATE_TIME_FORMAT_STR == null);
-        assertThat("Wrong default value  LEVEL_IN_BRACKETS ", LibgdxLogger.LEVEL_IN_BRACKETS == false);
+        assertThat("Wrong default value LOG_FILE", LibgdxLogger.CONFIG.LOG_FILE.equals("System.err"));
+        assertThat("Wrong default value  DEFAULT_LOG_LEVEL ", LibgdxLogger.CONFIG.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_DEBUG);
+        assertThat("Wrong default value  SHOW_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_LOG_NAME == true);
+        assertThat("Wrong default value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_SHORT_LOG_NAME == false);
+        assertThat("Wrong default value  SHOW_DATE_TIME ", LibgdxLogger.CONFIG.SHOW_DATE_TIME == true);
+        assertThat("Wrong default value  SHOW_THREAD_NAME ", LibgdxLogger.CONFIG.SHOW_THREAD_NAME == true);
+        assertThat("Wrong default value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR == null);
+        assertThat("Wrong default value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == false);
         assertThat("Wrong default value  WARN_LEVEL_STRING ", LibgdxLogger.WARN_LEVEL_STRING.equals("WARN"));
 
 
@@ -90,14 +91,14 @@ class LibgdxLoggerTest {
         Logger log2 = LoggerFactory.getLogger("INIT-TEST2");
         assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
 
-        assertThat("Wrong loaded value LOG_FILE", LibgdxLogger.LOG_FILE.equals("testLog.log"));
-        assertThat("Wrong loaded value  DEFAULT_LOG_LEVEL ", LibgdxLogger.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_ERROR);
-        assertThat("Wrong loaded value  SHOW_LOG_NAME ", LibgdxLogger.SHOW_LOG_NAME == false);
-        assertThat("Wrong loaded value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.SHOW_SHORT_LOG_NAME == true);
-        assertThat("Wrong loaded value  SHOW_DATE_TIME ", LibgdxLogger.SHOW_DATE_TIME == false);
-        assertThat("Wrong loaded value  SHOW_THREAD_NAME ", LibgdxLogger.SHOW_THREAD_NAME == false);
-        assertThat("Wrong loaded value  DATE_TIME_FORMAT_STR ", LibgdxLogger.DATE_TIME_FORMAT_STR.equals("dd.mm.yyyy"));
-        assertThat("Wrong loaded value  LEVEL_IN_BRACKETS ", LibgdxLogger.LEVEL_IN_BRACKETS == true);
+        assertThat("Wrong loaded value LOG_FILE", LibgdxLogger.CONFIG.LOG_FILE.equals("testLog.log"));
+        assertThat("Wrong loaded value  DEFAULT_LOG_LEVEL ", LibgdxLogger.CONFIG.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_ERROR);
+        assertThat("Wrong loaded value  SHOW_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_LOG_NAME == false);
+        assertThat("Wrong loaded value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_SHORT_LOG_NAME == true);
+        assertThat("Wrong loaded value  SHOW_DATE_TIME ", LibgdxLogger.CONFIG.SHOW_DATE_TIME == false);
+        assertThat("Wrong loaded value  SHOW_THREAD_NAME ", LibgdxLogger.CONFIG.SHOW_THREAD_NAME == false);
+        assertThat("Wrong loaded value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR.equals("dd.mm.yyyy"));
+        assertThat("Wrong loaded value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == true);
         assertThat("Wrong loaded value  WARN_LEVEL_STRING ", LibgdxLogger.WARN_LEVEL_STRING.equals("war"));
 
         // delete test files
@@ -112,8 +113,8 @@ class LibgdxLoggerTest {
         Logger log3 = LoggerFactory.getLogger("INIT-TEST3");
         assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
 
-        assertThat("Wrong loaded value LOG_FILE", LibgdxLogger.LOG_FILE.equals("test.log"));
-        assertThat("Wrong loaded value  DEFAULT_LOG_LEVEL ", LibgdxLogger.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_TRACE);
+        assertThat("Wrong loaded value LOG_FILE", LibgdxLogger.CONFIG.LOG_FILE.equals("test.log"));
+        assertThat("Wrong loaded value  DEFAULT_LOG_LEVEL ", LibgdxLogger.CONFIG.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_TRACE);
 
 
         //log and test log file
@@ -162,6 +163,32 @@ class LibgdxLoggerTest {
         if (logFile.exists()) {
             logFile.delete();
         }
+
+
+        //###################################################################################
+
+        // check initialisation with config
+
+        LoggerConfig config = new LoggerConfig();
+
+        LibgdxLogger.initial(config);
+        assertThat("Settings FileHandle must be NULL", LibgdxLogger.PROPERTIES_FILE_HANDLE == null);
+        assertThat("Config must set to default", LibgdxLogger.CONFIG.equals(new LoggerConfig()));
+        assertThat("Must not initialized", !LibgdxLogger.INITIALIZED);
+        Logger configLog = LoggerFactory.getLogger("configLog");
+        assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+
+        LoggerConfig config2 = new LoggerConfig();
+        config2.SHOW_DATE_TIME = false;
+
+        LibgdxLogger.initial(config2);
+        assertThat("Settings FileHandle must be NULL", LibgdxLogger.PROPERTIES_FILE_HANDLE == null);
+        assertThat("Config must not default", !LibgdxLogger.CONFIG.equals(new LoggerConfig()));
+        assertThat("Config must equals Config2", LibgdxLogger.CONFIG.equals(config2));
+        assertThat("Must not initialized", !LibgdxLogger.INITIALIZED);
+        Logger configLog2 = LoggerFactory.getLogger("configLog2");
+        assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
 
     }
 }
