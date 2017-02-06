@@ -20,8 +20,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 class LibgdxLoggerTest {
 
+    static Logger staticlog = LoggerFactory.getLogger("staticTest");
+
     @BeforeAll
     static void setGdx() {
+
+        staticlog.debug("Before initial");
+
         Gdx.files = new LwjglFiles();
 
         Gdx.app = new DummyLogApplication();
@@ -48,12 +53,10 @@ class LibgdxLoggerTest {
     @Test
     void init() {
 
-        assertThat("Should be not initialized", !LibgdxLogger.INITIALIZED);
-
         Logger log = LoggerFactory.getLogger("INIT-TEST");
 
         assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
-
+        staticlog.debug("After initial");
         assertThat("Logger instance must LibgdxLogger.class", log instanceof LibgdxLogger);
 
         LibgdxLogger libgdxLogger = (LibgdxLogger) log;
@@ -126,6 +129,9 @@ class LibgdxLoggerTest {
 
         log4.error("Error with date");
 
+        staticlog.debug("static debug log");
+
+
         // wait for writing
         try {
             Thread.sleep(500);
@@ -139,7 +145,8 @@ class LibgdxLoggerTest {
         String logFileText = logFile.readString();
 
         String mustLogFileText = "[DEBUG] INIT-TEST3 - Test Debug\n" +
-                "[DATE] [ERROR] INIT-TEST4 - Error with date\n";
+                "[DATE] [ERROR] INIT-TEST4 - Error with date\n" +
+                "[DATE] [DEBUG] staticTest - static debug log\n";
 
         //replace date
         Calendar calendar = Calendar.getInstance();

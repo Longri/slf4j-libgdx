@@ -25,6 +25,7 @@ package org.slf4j.impl;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
 import de.longri.cachebox3.utils.lists.CancelRunable;
 import de.longri.cachebox3.utils.lists.ThreadStack;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>
@@ -153,7 +155,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
     public static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
     public static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
 
-    static boolean INITIALIZED = false;
+    protected static boolean INITIALIZED = false;
 
     static int DEFAULT_LOG_LEVEL = LOG_LEVEL_DEBUG;
     static boolean SHOW_DATE_TIME = true;
@@ -218,7 +220,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
     // Initialize class attributes.
     // Load properties file, if found.
     // Override with system properties.
-    static void init() {
+    protected void init() {
         INITIALIZED = true;
         loadProperties();
 
@@ -259,7 +261,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         }
     }
 
-    FileHandle handle = Gdx.files.local(CONFIGURATION_FILE);
+//    FileHandle handle = Gdx.files.local(CONFIGURATION_FILE);
 
     private static void loadProperties() {
         // Add props from the resource simplelogger.properties
@@ -330,6 +332,15 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         return LOG_LEVEL_INFO;
     }
 
+
+    protected void log(int level, String message, Throwable throwable) {
+        if (INITIALIZED && !storeWrited.get()) {
+            //first write store
+            writeStore();
+        }
+        finalLog(level, message, throwable, new Date(), System.currentTimeMillis());
+    }
+
     /**
      * This is our internal implementation for logging regular
      * (non-parameterized) log messages.
@@ -337,8 +348,9 @@ public class LibgdxLogger extends MarkerIgnoringBase {
      * @param level   One of the LOG_LEVEL_XXX constants defining the log level
      * @param message The message itself
      * @param t       The exception whose stack trace should be logged
+     * @param mills
      */
-    private void log(int level, String message, Throwable t) {
+    protected void finalLog(int level, String message, Throwable t, Date logtime, long mills) {
         if (!isLevelEnabled(level)) {
             return;
         }
@@ -348,10 +360,10 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         // Append date-time if so configured
         if (SHOW_DATE_TIME) {
             if (DATE_FORMATTER != null) {
-                buf.append(getFormattedDate());
+                buf.append(getFormattedDate(logtime));
                 buf.append(' ');
             } else {
-                buf.append(System.currentTimeMillis() - START_TIME);
+                buf.append(mills - START_TIME);
                 buf.append(' ');
             }
         }
@@ -399,6 +411,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
         // Append the message
         buf.append(message);
+
         switch (level) {
             case LOG_LEVEL_TRACE:
             case LOG_LEVEL_DEBUG:
@@ -421,10 +434,11 @@ public class LibgdxLogger extends MarkerIgnoringBase {
             logFileWriter.pushAndStart(writerRunnable);
         }
 
+
     }
 
-    private String getFormattedDate() {
-        Date now = new Date();
+
+    private String getFormattedDate(Date now) {
         String dateText;
         synchronized (DATE_FORMATTER) {
             dateText = DATE_FORMATTER.format(now);
@@ -451,6 +465,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         FormattingTuple tp = MessageFormatter.format(format, arg1, arg2);
         log(level, tp.getMessage(), tp.getThrowable());
     }
+
 
     /**
      * For formatted messages, first substitute arguments and then log.
@@ -733,5 +748,34 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         }
     }
 
+
+    protected static AtomicBoolean storeWrited = new AtomicBoolean(false);
+    protected static Array<LogStructure> store = new Array<LogStructure>();
+
+
+    protected void writeStore() {
+
+        for (WaitForInitalisationLogger.LogStructure log : store) {
+            finalLog(log.level, log.massage, log.t, log.now, log.mills);
+        }
+        storeWrited.set(true);
+        store.clear();
+        store = null;
+    }
+
+
+    protected static class LogStructure {
+        final int level;
+        final String massage;
+        final Throwable t;
+        final Date now = new Date();
+        final long mills = System.currentTimeMillis();
+
+        protected LogStructure(int level, String massage, Throwable t) {
+            this.level = level;
+            this.massage = massage;
+            this.t = t;
+        }
+    }
 
 }

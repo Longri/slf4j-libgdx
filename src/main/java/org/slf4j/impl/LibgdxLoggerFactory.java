@@ -49,15 +49,11 @@ public class LibgdxLoggerFactory implements ILoggerFactory {
      */
     public Logger getLogger(String name) {
 
-        if (Gdx.app == null || Gdx.files == null) {
-            return null;
-        }
-
         Logger simpleLogger = loggerMap.get(name);
         if (simpleLogger != null) {
             return simpleLogger;
         } else {
-            Logger newInstance = new LibgdxLogger(name);
+            Logger newInstance = (Gdx.app == null || Gdx.files == null) ? new WaitForInitalisationLogger(name) : new LibgdxLogger(name);
             Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
             return oldInstance == null ? newInstance : oldInstance;
         }
@@ -65,11 +61,11 @@ public class LibgdxLoggerFactory implements ILoggerFactory {
 
     /**
      * Clear the internal logger cache.
-     *
+     * <p>
      * This method is intended to be called by classes (in the same package) for
      * testing purposes. This method is internal. It can be modified, renamed or
      * removed at any time without notice.
-     *
+     * <p>
      * You are strongly discouraged from calling this method in production code.
      */
     void reset() {
