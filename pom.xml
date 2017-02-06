@@ -9,17 +9,19 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.slf4j</groupId>
+	<groupId>de.longri.slf4j-libgdx</groupId>
 	<artifactId>slf4j-libgdx</artifactId>
 	<packaging>jar</packaging>
 	<name>SLF4J Binding for libgdx</name>
 	<description>SLF4J binding for libgdx</description>
 	<url>http://www.slf4j.org</url>
+	<version>1.9.5-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+			<version>1.7.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.badlogicgames.gdx</groupId>
@@ -50,7 +52,6 @@
 
 	</dependencies>
 
-
 	<build>
 		<plugins>
 			<plugin>
@@ -79,5 +80,15 @@
 		</plugins>
 	</build>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>longri</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>longri</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
 
 </project>
