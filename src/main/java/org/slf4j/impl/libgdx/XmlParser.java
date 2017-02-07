@@ -4,6 +4,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
 import org.slf4j.impl.LibgdxLogger;
+import org.slf4j.impl.LibgdxLoggerFactory;
 
 import java.io.IOException;
 
@@ -13,7 +14,7 @@ import java.io.IOException;
 public class XmlParser {
 
     final static String NULL = "NULL";
-    public  final static String CONFIG_NAME = "config";
+    public final static String CONFIG_NAME = "config";
 
     public static LoggerConfig parseConfig(FileHandle xmlFile) throws IOException {
         LoggerConfig config = new LoggerConfig();
@@ -71,5 +72,35 @@ public class XmlParser {
 
     private static String getString(Element element, String name, String defaultValue) {
         return element.get(name, defaultValue);
+    }
+
+
+    public static void parseExcludeInclude(FileHandle xmlFile) throws IOException {
+
+        Element root = new XmlReader().parse(xmlFile);
+        if (root.getName().equals(CONFIG_NAME)) {
+            LibgdxLoggerFactory.EXCLUDE_LIST.clear();
+            LibgdxLoggerFactory.INCLUDE_LIST.clear();
+
+            int n;
+
+            Element include = root.getChildByName("include");
+            if (include != null) {
+                n = include.getChildCount();
+                for (int i = 0; i < n; i++) {
+                    String name = include.getChild(i).getName();
+                    LibgdxLoggerFactory.INCLUDE_LIST.add(name);
+                }
+            }
+
+            Element exclude = root.getChildByName("exclude");
+            if (exclude != null) {
+                n = exclude.getChildCount();
+                for (int i = 0; i < n; i++) {
+                    String name = exclude.getChild(i).getName();
+                    LibgdxLoggerFactory.EXCLUDE_LIST.add(name);
+                }
+            }
+        }
     }
 }

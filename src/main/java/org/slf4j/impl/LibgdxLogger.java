@@ -159,7 +159,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
     public static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
     public static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
 
-    protected static boolean INITIALIZED = false;
+    public static boolean INITIALIZED = false;
 
     static LoggerConfig CONFIG = new LoggerConfig();
 
@@ -228,6 +228,17 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         INITIALIZED = false;
         CONFIG.setFrom(config);
         PROPERTIES_FILE_HANDLE = propertiesFileHandle;
+
+        if (PROPERTIES_FILE_HANDLE != null && PROPERTIES_FILE_HANDLE.exists()) {
+            if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
+                //load include and exclude list
+                try {
+                    XmlParser.parseExcludeInclude(PROPERTIES_FILE_HANDLE);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 

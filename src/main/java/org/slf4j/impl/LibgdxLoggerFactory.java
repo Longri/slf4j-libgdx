@@ -24,9 +24,11 @@
 package org.slf4j.impl;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.ObjectMap;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -38,23 +40,33 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LibgdxLoggerFactory implements ILoggerFactory {
 
-    ConcurrentMap<String, Logger> loggerMap;
-
-    public LibgdxLoggerFactory() {
-        loggerMap = new ConcurrentHashMap<String, Logger>();
-    }
+    public static final HashSet<String> EXCLUDE_LIST = new HashSet<String>();
+    public static final HashSet<String> INCLUDE_LIST = new HashSet<String>();
+    static final ObjectMap<String, Logger> loggerMap=new ObjectMap<String, Logger>();
+    private static final Logger EMPTY_LOGGER = new EmptyLogger();
 
     /**
      * Return an appropriate {@link LibgdxLogger} instance by name.
      */
     public Logger getLogger(String name) {
 
+        // return empty logger if the name on disable list
+        if (!INCLUDE_LIST.isEmpty()) {
+            if (!INCLUDE_LIST.contains(name)) return EMPTY_LOGGER;
+        }
+
+        if (!EXCLUDE_LIST.isEmpty()) {
+            if (EXCLUDE_LIST.contains(name)) return EMPTY_LOGGER;
+        }
+
+
+
         Logger simpleLogger = loggerMap.get(name);
         if (simpleLogger != null) {
             return simpleLogger;
         } else {
             Logger newInstance = (Gdx.app == null || Gdx.files == null) ? new WaitForInitalisationLogger(name) : new LibgdxLogger(name);
-            Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
+            Logger oldInstance = loggerMap.put(name, newInstance);
             return oldInstance == null ? newInstance : oldInstance;
         }
     }
@@ -68,7 +80,7 @@ public class LibgdxLoggerFactory implements ILoggerFactory {
      * <p>
      * You are strongly discouraged from calling this method in production code.
      */
-    void reset() {
+    public static void reset() {
         loggerMap.clear();
     }
 }

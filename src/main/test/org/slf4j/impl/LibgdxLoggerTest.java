@@ -242,6 +242,9 @@ class LibgdxLoggerTest {
         assertThat("Wrong loaded value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR.equals("dd-mm-yy"));
         assertThat("Wrong loaded value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == true);
 
+        assertThat("Include list must empty", LibgdxLoggerFactory.INCLUDE_LIST.isEmpty());
+        assertThat("Exclude list must empty", LibgdxLoggerFactory.EXCLUDE_LIST.isEmpty());
+
         xmlFile.delete();
 
 
