@@ -33,8 +33,11 @@ import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.helpers.Util;
+import org.slf4j.impl.libgdx.LoggerConfig;
+import org.slf4j.impl.libgdx.XmlParser;
 import org.slf4j.spi.LocationAwareLogger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -143,8 +146,9 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
     public static FileHandle PROPERTIES_FILE_HANDLE;
 
-    private static final long serialVersionUID = -632788891211436180L;
+
     public static final String CONFIGURATION_FILE = "libgdxlogger.properties";
+    public static final String CONFIGURATION_FILE_XML = "libgdxlogger.xml";
 
     private static long START_TIME = System.currentTimeMillis();
     private static final Properties SIMPLE_LOGGER_PROPS = new Properties();
@@ -155,18 +159,12 @@ public class LibgdxLogger extends MarkerIgnoringBase {
     public static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
     public static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
 
-    protected static boolean INITIALIZED = false;
+    public static boolean INITIALIZED = false;
 
-    static int DEFAULT_LOG_LEVEL = LOG_LEVEL_DEBUG;
-    static boolean SHOW_DATE_TIME = true;
-    static String DATE_TIME_FORMAT_STR = null;
-    static DateFormat DATE_FORMATTER = null;
-    static boolean SHOW_THREAD_NAME = true;
-    static boolean SHOW_LOG_NAME = true;
-    static boolean SHOW_SHORT_LOG_NAME = false;
-    static String LOG_FILE = "System.err";
-    static boolean LEVEL_IN_BRACKETS = false;
+    static LoggerConfig CONFIG = new LoggerConfig();
+
     static String WARN_LEVEL_STRING = "WARN";
+    static DateFormat DATE_FORMATTER = null;
 
     static ThreadStack<LogWriterRunnable> logFileWriter = new ThreadStack<LogWriterRunnable>(100);
     static FileHandle logFile;
@@ -175,7 +173,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
      * All system properties used by <code>SimpleLogger</code> start with this
      * prefix
      */
-    public static final String SYSTEM_PREFIX = "org.slf4j.libgdxLogger.";
+    public static final String SYSTEM_PREFIX = "";
 
     public static final String DEFAULT_LOG_LEVEL_KEY = SYSTEM_PREFIX
             + "defaultLogLevel";
@@ -217,6 +215,33 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         return (prop == null) ? defaultValue : "true".equalsIgnoreCase(prop.trim());
     }
 
+
+    public static void initial(LoggerConfig config) {
+        initial(config, null);
+    }
+
+    public static void initial(FileHandle propertiesFileHandle) {
+        initial(null, propertiesFileHandle);
+    }
+
+    public static void initial(LoggerConfig config, FileHandle propertiesFileHandle) {
+        INITIALIZED = false;
+        CONFIG.setFrom(config);
+        PROPERTIES_FILE_HANDLE = propertiesFileHandle;
+
+        if (PROPERTIES_FILE_HANDLE != null && PROPERTIES_FILE_HANDLE.exists()) {
+            if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
+                //load include and exclude list
+                try {
+                    XmlParser.parseExcludeInclude(PROPERTIES_FILE_HANDLE);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
     // Initialize class attributes.
     // Load properties file, if found.
     // Override with system properties.
@@ -224,38 +249,10 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         INITIALIZED = true;
         loadProperties();
 
-        String defaultLogLevelString = getStringProperty(DEFAULT_LOG_LEVEL_KEY,
-                null);
-        if (defaultLogLevelString != null)
-            DEFAULT_LOG_LEVEL = stringToLevel(defaultLogLevelString.trim());
-
-        SHOW_LOG_NAME = getBooleanProperty(SHOW_LOG_NAME_KEY, SHOW_LOG_NAME);
-        SHOW_SHORT_LOG_NAME = getBooleanProperty(SHOW_SHORT_LOG_NAME_KEY,
-                SHOW_SHORT_LOG_NAME);
-        SHOW_DATE_TIME = getBooleanProperty(SHOW_DATE_TIME_KEY, SHOW_DATE_TIME);
-        SHOW_THREAD_NAME = getBooleanProperty(SHOW_THREAD_NAME_KEY,
-                SHOW_THREAD_NAME);
-        DATE_TIME_FORMAT_STR = getStringProperty(DATE_TIME_FORMAT_KEY,
-                DATE_TIME_FORMAT_STR);
-        LEVEL_IN_BRACKETS = getBooleanProperty(LEVEL_IN_BRACKETS_KEY,
-                LEVEL_IN_BRACKETS);
-        WARN_LEVEL_STRING = getStringProperty(WARN_LEVEL_STRING_KEY,
-                WARN_LEVEL_STRING);
-
-        LOG_FILE = getStringProperty(LOG_FILE_KEY, LOG_FILE).trim();
-
-        if (DATE_TIME_FORMAT_STR != null) {
-            try {
-                DATE_FORMATTER = new SimpleDateFormat(DATE_TIME_FORMAT_STR);
-            } catch (IllegalArgumentException e) {
-                Util.report("Bad date format in " + CONFIGURATION_FILE
-                        + "; will output relative time", e);
-            }
-        }
 
         // create log file
-        if (LOG_FILE != null && !LOG_FILE.equals("System.err")) {
-            logFile = PROPERTIES_FILE_HANDLE.parent().child(LOG_FILE);
+        if (PROPERTIES_FILE_HANDLE != null && CONFIG.LOG_FILE != null && !CONFIG.LOG_FILE.equals("System.err")) {
+            logFile = PROPERTIES_FILE_HANDLE.parent().child(CONFIG.LOG_FILE);
         } else {
             logFile = null;
         }
@@ -266,7 +263,18 @@ public class LibgdxLogger extends MarkerIgnoringBase {
     private static void loadProperties() {
         // Add props from the resource simplelogger.properties
 
-        if (PROPERTIES_FILE_HANDLE.exists()) {
+        if (PROPERTIES_FILE_HANDLE != null && PROPERTIES_FILE_HANDLE.exists()) {
+
+            if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
+                try {
+                    CONFIG.setFrom(XmlParser.parseConfig(PROPERTIES_FILE_HANDLE));
+                } catch (IOException e) {
+                    // fall back to default
+                    CONFIG.setFrom(new LoggerConfig());
+                }
+                return;
+            }
+
             InputStream in = PROPERTIES_FILE_HANDLE.read();
             try {
                 SIMPLE_LOGGER_PROPS.load(in);
@@ -275,6 +283,36 @@ public class LibgdxLogger extends MarkerIgnoringBase {
                 // ignored
             }
         }
+
+        String defaultLogLevelString = getStringProperty(DEFAULT_LOG_LEVEL_KEY,
+                null);
+        if (defaultLogLevelString != null)
+            CONFIG.DEFAULT_LOG_LEVEL = stringToLevel(defaultLogLevelString.trim());
+
+        CONFIG.SHOW_LOG_NAME = getBooleanProperty(SHOW_LOG_NAME_KEY, CONFIG.SHOW_LOG_NAME);
+        CONFIG.SHOW_SHORT_LOG_NAME = getBooleanProperty(SHOW_SHORT_LOG_NAME_KEY,
+                CONFIG.SHOW_SHORT_LOG_NAME);
+        CONFIG.SHOW_DATE_TIME = getBooleanProperty(SHOW_DATE_TIME_KEY, CONFIG.SHOW_DATE_TIME);
+        CONFIG.SHOW_THREAD_NAME = getBooleanProperty(SHOW_THREAD_NAME_KEY,
+                CONFIG.SHOW_THREAD_NAME);
+        CONFIG.DATE_TIME_FORMAT_STR = getStringProperty(DATE_TIME_FORMAT_KEY,
+                CONFIG.DATE_TIME_FORMAT_STR);
+        CONFIG.LEVEL_IN_BRACKETS = getBooleanProperty(LEVEL_IN_BRACKETS_KEY,
+                CONFIG.LEVEL_IN_BRACKETS);
+        WARN_LEVEL_STRING = getStringProperty(WARN_LEVEL_STRING_KEY,
+                WARN_LEVEL_STRING);
+
+        CONFIG.LOG_FILE = getStringProperty(LOG_FILE_KEY, CONFIG.LOG_FILE).trim();
+
+        if (CONFIG.DATE_TIME_FORMAT_STR != null) {
+            try {
+                DATE_FORMATTER = new SimpleDateFormat(CONFIG.DATE_TIME_FORMAT_STR);
+            } catch (IllegalArgumentException e) {
+                Util.report("Bad date format in " + CONFIGURATION_FILE
+                        + "; will output relative time", e);
+            }
+        }
+
     }
 
     /**
@@ -300,7 +338,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         if (levelString != null) {
             this.currentLogLevel = stringToLevel(levelString);
         } else {
-            this.currentLogLevel = DEFAULT_LOG_LEVEL;
+            this.currentLogLevel = CONFIG.DEFAULT_LOG_LEVEL;
         }
     }
 
@@ -358,7 +396,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         StringBuffer buf = new StringBuffer(32);
 
         // Append date-time if so configured
-        if (SHOW_DATE_TIME) {
+        if (CONFIG.SHOW_DATE_TIME) {
             if (DATE_FORMATTER != null) {
                 buf.append(getFormattedDate(logtime));
                 buf.append(' ');
@@ -369,13 +407,13 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         }
 
         // Append current thread name if so configured
-        if (SHOW_THREAD_NAME) {
+        if (CONFIG.SHOW_THREAD_NAME) {
             buf.append('[');
             buf.append(Thread.currentThread().getName());
             buf.append("] ");
         }
 
-        if (LEVEL_IN_BRACKETS)
+        if (CONFIG.LEVEL_IN_BRACKETS)
             buf.append('[');
 
         // Append a readable representation of the log level
@@ -396,16 +434,16 @@ public class LibgdxLogger extends MarkerIgnoringBase {
                 buf.append("ERROR");
                 break;
         }
-        if (LEVEL_IN_BRACKETS)
+        if (CONFIG.LEVEL_IN_BRACKETS)
             buf.append(']');
         buf.append(' ');
 
         // Append the name of the log instance if so configured
-        if (SHOW_SHORT_LOG_NAME) {
+        if (CONFIG.SHOW_SHORT_LOG_NAME) {
             if (shortLogName == null)
                 shortLogName = computeShortName();
             buf.append(String.valueOf(shortLogName)).append(" - ");
-        } else if (SHOW_LOG_NAME) {
+        } else if (CONFIG.SHOW_LOG_NAME) {
             buf.append(String.valueOf(name)).append(" - ");
         }
 
