@@ -13,7 +13,7 @@ import java.io.IOException;
 public class XmlParser {
 
     final static String NULL = "NULL";
-    final static String CONFIG_NAME = "config";
+    public  final static String CONFIG_NAME = "config";
 
     public static LoggerConfig parseConfig(FileHandle xmlFile) throws IOException {
         LoggerConfig config = new LoggerConfig();

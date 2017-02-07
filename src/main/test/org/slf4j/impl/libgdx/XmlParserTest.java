@@ -32,9 +32,7 @@ class XmlParserTest {
 
     @Test
     void parseConfig() throws IOException {
-        FileHandle xmlFile = null;
-
-        xmlFile = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE_XML);
+        FileHandle xmlFile = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE_XML);
         Writer fileWriter = xmlFile.writer(false);
         XmlWriter xmlWriter = new XmlWriter(fileWriter);
         xmlWriter.element(XmlParser.CONFIG_NAME)

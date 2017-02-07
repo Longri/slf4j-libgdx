@@ -34,8 +34,10 @@ import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.helpers.Util;
 import org.slf4j.impl.libgdx.LoggerConfig;
+import org.slf4j.impl.libgdx.XmlParser;
 import org.slf4j.spi.LocationAwareLogger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -251,6 +253,17 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         // Add props from the resource simplelogger.properties
 
         if (PROPERTIES_FILE_HANDLE != null && PROPERTIES_FILE_HANDLE.exists()) {
+
+            if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
+                try {
+                    CONFIG.setFrom(XmlParser.parseConfig(PROPERTIES_FILE_HANDLE));
+                } catch (IOException e) {
+                    // fall back to default
+                    CONFIG.setFrom(new LoggerConfig());
+                }
+                return;
+            }
+
             InputStream in = PROPERTIES_FILE_HANDLE.read();
             try {
                 SIMPLE_LOGGER_PROPS.load(in);

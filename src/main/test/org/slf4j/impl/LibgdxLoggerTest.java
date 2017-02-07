@@ -4,17 +4,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationLogger;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.XmlWriter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.libgdx.LoggerConfig;
+import org.slf4j.impl.libgdx.XmlParser;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by Longri on 04.02.17.
@@ -51,7 +56,7 @@ class LibgdxLoggerTest {
 
 
     @Test
-    void init() {
+    void init() throws IOException {
 
         Logger log = LoggerFactory.getLogger("INIT-TEST");
 
@@ -188,6 +193,57 @@ class LibgdxLoggerTest {
         assertThat("Must not initialized", !LibgdxLogger.INITIALIZED);
         Logger configLog2 = LoggerFactory.getLogger("configLog2");
         assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+
+        // initial with config.xml
+        FileHandle xmlFile = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE_XML);
+        Writer fileWriter = xmlFile.writer(false);
+        XmlWriter xmlWriter = new XmlWriter(fileWriter);
+        xmlWriter.element(XmlParser.CONFIG_NAME)
+                .attribute(LibgdxLogger.DEFAULT_LOG_LEVEL_KEY, 50)
+                .attribute(LibgdxLogger.SHOW_DATE_TIME_KEY, false)
+                .attribute(LibgdxLogger.LEVEL_IN_BRACKETS_KEY, true)
+                .attribute(LibgdxLogger.SHOW_THREAD_NAME_KEY, false)
+                .attribute(LibgdxLogger.SHOW_LOG_NAME_KEY, false)
+                .attribute(LibgdxLogger.SHOW_SHORT_LOG_NAME_KEY, true)
+                .attribute(LibgdxLogger.LOG_FILE_KEY, "logFile.log")
+                .attribute(LibgdxLogger.DATE_TIME_FORMAT_KEY, "dd-mm-yy")
+                .pop();
+
+        xmlWriter.flush();
+        xmlWriter.close();
+
+        LoggerConfig expected = new LoggerConfig();
+        expected.DEFAULT_LOG_LEVEL = 50;
+        expected.SHOW_DATE_TIME = false;
+        expected.LEVEL_IN_BRACKETS = true;
+        expected.SHOW_THREAD_NAME = false;
+        expected.SHOW_LOG_NAME = false;
+        expected.SHOW_SHORT_LOG_NAME = true;
+        expected.LOG_FILE = "logFile.log";
+        expected.DATE_TIME_FORMAT_STR = "dd-mm-yy";
+
+        LibgdxLogger.initial(xmlFile);
+        assertThat("Must not initialized", !LibgdxLogger.INITIALIZED);
+        Logger configLog3 = LoggerFactory.getLogger("configLog3");
+        assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+        assertEquals(LibgdxLogger.PROPERTIES_FILE_HANDLE, xmlFile, "Settings FileHandle must be NULL");
+        assertThat("Config must not default", !LibgdxLogger.CONFIG.equals(new LoggerConfig()));
+        assertEquals(LibgdxLogger.CONFIG, expected, "Config must equals Config2");
+
+
+        assertThat("Wrong loaded value LOG_FILE", LibgdxLogger.CONFIG.LOG_FILE.equals("logFile.log"));
+        assertThat("Wrong loaded value  DEFAULT_LOG_LEVEL ", LibgdxLogger.CONFIG.DEFAULT_LOG_LEVEL == 50);
+        assertThat("Wrong loaded value  SHOW_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_LOG_NAME == false);
+        assertThat("Wrong loaded value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_SHORT_LOG_NAME == true);
+        assertThat("Wrong loaded value  SHOW_DATE_TIME ", LibgdxLogger.CONFIG.SHOW_DATE_TIME == false);
+        assertThat("Wrong loaded value  SHOW_THREAD_NAME ", LibgdxLogger.CONFIG.SHOW_THREAD_NAME == false);
+        assertThat("Wrong loaded value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR.equals("dd-mm-yy"));
+        assertThat("Wrong loaded value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == true);
+
+        xmlFile.delete();
+
 
     }
 }
