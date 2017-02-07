@@ -1,5 +1,6 @@
 package org.slf4j.impl.libgdx;
 
+import com.badlogic.gdx.utils.StringBuilder;
 import org.slf4j.impl.LibgdxLogger;
 
 /**
@@ -43,8 +44,8 @@ public class LoggerConfig {
         } else {
             if (!this.DATE_TIME_FORMAT_STR.equals(config.DATE_TIME_FORMAT_STR)) return false;
         }
-        if (this.SHOW_THREAD_NAME = !config.SHOW_THREAD_NAME) return false;
-        if (this.SHOW_LOG_NAME = !config.SHOW_LOG_NAME) return false;
+        if (this.SHOW_THREAD_NAME != config.SHOW_THREAD_NAME) return false;
+        if (this.SHOW_LOG_NAME != config.SHOW_LOG_NAME) return false;
         if (this.SHOW_SHORT_LOG_NAME != config.SHOW_SHORT_LOG_NAME) return false;
         if (this.LOG_FILE == null) {
             if (config.LOG_FILE != null) return false;
@@ -54,5 +55,20 @@ public class LoggerConfig {
         if (this.LEVEL_IN_BRACKETS != config.LEVEL_IN_BRACKETS) return false;
 
         return true;
+    }
+
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LoggerConfig: \n");
+        sb.append("  DEFAULT_LOG_LEVEL = " + this.DEFAULT_LOG_LEVEL + "\n");
+        sb.append("  SHOW_DATE_TIME = " + this.SHOW_DATE_TIME + "\n");
+        sb.append("  DATE_TIME_FORMAT_STR = " + this.DATE_TIME_FORMAT_STR + "\n");
+        sb.append("  SHOW_THREAD_NAME = " + this.SHOW_THREAD_NAME + "\n");
+        sb.append("  SHOW_LOG_NAME = " + this.SHOW_LOG_NAME + "\n");
+        sb.append("  SHOW_SHORT_LOG_NAME = " + this.SHOW_SHORT_LOG_NAME + "\n");
+        sb.append("  LOG_FILE = " + this.LOG_FILE + "\n");
+        sb.append("  LEVEL_IN_BRACKETS = " + this.LEVEL_IN_BRACKETS + "\n");
+        return sb.toString();
     }
 }

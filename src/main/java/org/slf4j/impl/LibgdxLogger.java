@@ -146,6 +146,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
 
     public static final String CONFIGURATION_FILE = "libgdxlogger.properties";
+    public static final String CONFIGURATION_FILE_XML = "libgdxlogger.xml";
 
     private static long START_TIME = System.currentTimeMillis();
     private static final Properties SIMPLE_LOGGER_PROPS = new Properties();

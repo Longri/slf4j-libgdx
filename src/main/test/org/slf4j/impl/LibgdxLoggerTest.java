@@ -29,7 +29,6 @@ class LibgdxLoggerTest {
         staticlog.debug("Before initial");
 
         Gdx.files = new LwjglFiles();
-
         Gdx.app = new DummyLogApplication();
         Gdx.app.setApplicationLogger(new LwjglApplicationLogger());
 
