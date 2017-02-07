@@ -173,7 +173,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
      * All system properties used by <code>SimpleLogger</code> start with this
      * prefix
      */
-    public static final String SYSTEM_PREFIX = "org.slf4j.libgdxLogger.";
+    public static final String SYSTEM_PREFIX = "";
 
     public static final String DEFAULT_LOG_LEVEL_KEY = SYSTEM_PREFIX
             + "defaultLogLevel";
