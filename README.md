@@ -18,3 +18,17 @@ Modification
 3.map trace and debug to Gdx.app.debug, info to Gdx.app.log, warn and error to Gdx.app.error
 
 4.remove some useless code
+
+
+<config>
+	<include>
+		<class1/>
+		<class2/>
+		<class3/>
+	</include>
+	<exclude>
+		<class4/>
+		<class5/>
+		<class6/>
+	</exclude>
+</config>
