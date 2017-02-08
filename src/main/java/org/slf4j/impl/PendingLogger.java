@@ -1,12 +1,16 @@
 package org.slf4j.impl;
 
+import org.slf4j.helpers.MarkerIgnoringBase;
+
 import java.util.Date;
 
 /**
- * Created by Longri on 06.02.2017.
+ * Created by Longri on 08.02.2017.
  */
-public class WaitForInitalisationLogger extends LibgdxLogger {
+public class PendingLogger extends LibgdxLogger {
 
+
+    LibgdxLogger logger = null;
 
     /**
      * Package access allows only {@link LibgdxLoggerFactory} to instantiate
@@ -14,7 +18,7 @@ public class WaitForInitalisationLogger extends LibgdxLogger {
      *
      * @param name
      */
-    WaitForInitalisationLogger(String name) {
+    PendingLogger(String name) {
         super(name);
     }
 
@@ -25,14 +29,14 @@ public class WaitForInitalisationLogger extends LibgdxLogger {
 
     protected void log(int level, String message, Throwable throwable) {
         if (!INITIALIZED) {
-            store.add(new LogStructure(level, message, throwable));
+            store.add(new LogStructure(this, level, message, throwable));
         } else {
             Date now = new Date();
             long miils = System.currentTimeMillis();
             if (!storeWrited.get()) {
                 writeStore();
             }
-            finalLog(level, message, throwable, now, miils);
+            logger.finalLog(level, message, throwable, now, miils);
         }
     }
 }

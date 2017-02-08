@@ -42,13 +42,17 @@ public class LibgdxLoggerFactory implements ILoggerFactory {
 
     public static final HashSet<String> EXCLUDE_LIST = new HashSet<String>();
     public static final HashSet<String> INCLUDE_LIST = new HashSet<String>();
-    static final ObjectMap<String, Logger> loggerMap=new ObjectMap<String, Logger>();
-    private static final Logger EMPTY_LOGGER = new EmptyLogger();
+    static final ObjectMap<String, LibgdxLogger> loggerMap = new ObjectMap<String, LibgdxLogger>();
+    private static final LibgdxLogger EMPTY_LOGGER = new EmptyLogger();
 
     /**
      * Return an appropriate {@link LibgdxLogger} instance by name.
      */
     public Logger getLogger(String name) {
+        return getInstance(name);
+    }
+
+    static LibgdxLogger getInstance(String name) {
 
         // return empty logger if the name on disable list
         if (!INCLUDE_LIST.isEmpty()) {
@@ -59,14 +63,12 @@ public class LibgdxLoggerFactory implements ILoggerFactory {
             if (EXCLUDE_LIST.contains(name)) return EMPTY_LOGGER;
         }
 
-
-
-        Logger simpleLogger = loggerMap.get(name);
+        LibgdxLogger simpleLogger = loggerMap.get(name);
         if (simpleLogger != null) {
             return simpleLogger;
         } else {
-            Logger newInstance = (Gdx.app == null || Gdx.files == null) ? new WaitForInitalisationLogger(name) : new LibgdxLogger(name);
-            Logger oldInstance = loggerMap.put(name, newInstance);
+            LibgdxLogger newInstance = (Gdx.app == null || Gdx.files == null) ? new PendingLogger(name) : new LibgdxLogger(name);
+            LibgdxLogger oldInstance = loggerMap.put(name, newInstance);
             return oldInstance == null ? newInstance : oldInstance;
         }
     }

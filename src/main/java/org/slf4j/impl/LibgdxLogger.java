@@ -195,6 +195,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
     public static final String LOG_KEY_PREFIX = SYSTEM_PREFIX + "log.";
 
+
     private static String getStringProperty(String name) {
         String prop = null;
         try {
@@ -455,14 +456,14 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         switch (level) {
             case LOG_LEVEL_TRACE:
             case LOG_LEVEL_DEBUG:
-                Gdx.app.debug(shortLogName, buf.toString());
+                Gdx.app.debug("", buf.toString());
                 break;
             case LOG_LEVEL_INFO:
-                Gdx.app.log(shortLogName, buf.toString());
+                Gdx.app.log("", buf.toString());
                 break;
             case LOG_LEVEL_WARN:
             case LOG_LEVEL_ERROR:
-                Gdx.app.error(shortLogName, buf.toString());
+                Gdx.app.error("", buf.toString());
                 break;
         }
 
@@ -499,9 +500,6 @@ public class LibgdxLogger extends MarkerIgnoringBase {
      * @param arg2
      */
     private void formatAndLog(int level, String format, Object arg1, Object arg2) {
-        if (!isLevelEnabled(level)) {
-            return;
-        }
         FormattingTuple tp = MessageFormatter.format(format, arg1, arg2);
         log(level, tp.getMessage(), tp.getThrowable());
     }
@@ -515,9 +513,6 @@ public class LibgdxLogger extends MarkerIgnoringBase {
      * @param arguments a list of 3 ore more arguments
      */
     private void formatAndLog(int level, String format, Object... arguments) {
-        if (!isLevelEnabled(level)) {
-            return;
-        }
         FormattingTuple tp = MessageFormatter.arrayFormat(format, arguments);
         log(level, tp.getMessage(), tp.getThrowable());
     }
@@ -794,28 +789,22 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
 
     protected void writeStore() {
-
-        for (WaitForInitalisationLogger.LogStructure log : store) {
-            finalLog(log.level, log.massage, log.t, log.now, log.mills);
+        LibgdxLoggerFactory.reset();
+        for (LogStructure log : store) {
+            if (log.logger.logger == null) {
+                log.logger.logger = LibgdxLoggerFactory.getInstance(log.logger.name);
+            }
+            log.logger.finalLog(log.level, log.massage, log.t, log.now, log.mills);
+        }
+        if (this instanceof PendingLogger) {
+            if (((PendingLogger) this).logger == null) {
+                ((PendingLogger) this).logger = LibgdxLoggerFactory.getInstance(this.name);
+            }
         }
         storeWrited.set(true);
         store.clear();
         store = null;
     }
 
-
-    protected static class LogStructure {
-        final int level;
-        final String massage;
-        final Throwable t;
-        final Date now = new Date();
-        final long mills = System.currentTimeMillis();
-
-        protected LogStructure(int level, String massage, Throwable t) {
-            this.level = level;
-            this.massage = massage;
-            this.t = t;
-        }
-    }
 
 }
