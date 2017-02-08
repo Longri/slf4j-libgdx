@@ -19,6 +19,8 @@ public class XmlParser {
     public static LoggerConfig parseConfig(FileHandle xmlFile) throws IOException {
         LoggerConfig config = new LoggerConfig();
 
+        if (xmlFile == null || xmlFile.isDirectory()) return config;
+
         Element root = new XmlReader().parse(xmlFile);
         if (root.getName().equals(CONFIG_NAME)) {
             config.DEFAULT_LOG_LEVEL = getInt(root, LibgdxLogger.DEFAULT_LOG_LEVEL_KEY, config.DEFAULT_LOG_LEVEL);

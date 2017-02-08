@@ -161,7 +161,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
     public static boolean INITIALIZED = false;
 
-    static LoggerConfig CONFIG = new LoggerConfig();
+    public static LoggerConfig CONFIG = new LoggerConfig();
 
     static String WARN_LEVEL_STRING = "WARN";
     static DateFormat DATE_FORMATTER = null;
@@ -230,12 +230,14 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         PROPERTIES_FILE_HANDLE = propertiesFileHandle;
 
         if (PROPERTIES_FILE_HANDLE != null && PROPERTIES_FILE_HANDLE.exists()) {
-            if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
-                //load include and exclude list
-                try {
-                    XmlParser.parseExcludeInclude(PROPERTIES_FILE_HANDLE);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (!PROPERTIES_FILE_HANDLE.isDirectory()) {
+                if (PROPERTIES_FILE_HANDLE.extension().equals("xml")) {
+                    //load include and exclude list
+                    try {
+                        XmlParser.parseExcludeInclude(PROPERTIES_FILE_HANDLE);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

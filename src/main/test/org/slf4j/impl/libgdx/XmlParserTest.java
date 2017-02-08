@@ -125,6 +125,32 @@ class XmlParserTest {
         xmlFile.delete();
     }
 
+    @Test
+    void FileNotFoundExceptionTest() throws IOException {
+        FileHandle xmlFile = Gdx.files.local("NoExist" + LibgdxLogger.CONFIGURATION_FILE_XML);
+        if (xmlFile.exists()) xmlFile.delete();
+
+        assertThat("Can't run test! Can't delete File:" + xmlFile.file().getAbsolutePath(), !xmlFile.exists());
+        LibgdxLogger.initial(xmlFile);
+        LibgdxLoggerFactory.reset();
+        Logger loggerClass = LoggerFactory.getLogger("loggerClass");
+        assertThat("Config must set to default", LibgdxLogger.CONFIG.equals(new LoggerConfig()));
+    }
+
+    @Test
+    void EISDIR_FileNotFoundExceptionTest() throws IOException {
+        FileHandle xmlFile = Gdx.files.local("NoExistFolder" + LibgdxLogger.CONFIGURATION_FILE_XML);
+        xmlFile.mkdirs();
+
+        assertThat("xmlFile must a directory for Test", xmlFile.isDirectory());
+
+        LibgdxLogger.initial(xmlFile);
+        LibgdxLoggerFactory.reset();
+        Logger loggerClass2 = LoggerFactory.getLogger("loggerClass2");
+        assertThat("Config must set to default", LibgdxLogger.CONFIG.equals(new LoggerConfig()));
+
+        if (xmlFile.exists()) xmlFile.delete();
+    }
 
     @AfterAll
     static void removeFiles() {
