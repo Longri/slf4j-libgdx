@@ -36,6 +36,9 @@ public class PendingLogger extends LibgdxLogger {
             if (!storeWrited.get()) {
                 writeStore();
             }
+            if (this.logger == null) {
+                this.logger = LibgdxLoggerFactory.getInstance(this.name);
+            }
             logger.finalLog(level, message, throwable, now, miils);
         }
     }
