@@ -73,7 +73,7 @@ public class ThreadStack<T extends CancelRunable>  {
                     executor = null;
                 }
                 try {
-                    Thread.sleep(0);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
