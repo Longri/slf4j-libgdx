@@ -68,7 +68,7 @@ public class IncludeExcluetest {
                 .attribute(LibgdxLogger.SHOW_LOG_NAME_KEY, false)
                 .attribute(LibgdxLogger.SHOW_SHORT_LOG_NAME_KEY, true)
                 .attribute(LibgdxLogger.LOG_FILE_KEY, "logFile.log")
-                .attribute(LibgdxLogger.DATE_TIME_FORMAT_KEY, "dd-mm-yy")
+                .attribute(LibgdxLogger.DATE_TIME_FORMAT_KEY, "dd-MM-yy hh:mm:ss-SSS")
                 .element(LibgdxLogger.EXCLUDE)
                 .attribute(LibgdxLogger.CLASS_KEY, "configLog3")
                 .pop()
@@ -89,7 +89,7 @@ public class IncludeExcluetest {
         expected.SHOW_LOG_NAME = false;
         expected.SHOW_SHORT_LOG_NAME = true;
         expected.LOG_FILE = "logFile.log";
-        expected.DATE_TIME_FORMAT_STR = "dd-mm-yy";
+        expected.DATE_TIME_FORMAT_STR = "dd-MM-yy hh:mm:ss-SSS";
 
         LibgdxLogger.initial(xmlFile);
         assertThat("Must not initialized", !LibgdxLogger.INITIALIZED);

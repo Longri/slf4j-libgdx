@@ -81,19 +81,18 @@ class XmlParserTest {
         Writer fileWriter = xmlFile.writer(false);
         XmlWriter xmlWriter = new XmlWriter(fileWriter);
         XmlWriter config = xmlWriter.element(XmlParser.CONFIG_NAME);
-        XmlWriter include = config.element("include");
-        include.element("class1").pop();
-        include.element("class2").pop();
-        include.element("class3").pop();
-        include.pop();
-        XmlWriter exclude = config.element("exclude");
-        exclude.element("class4").pop();
-        exclude.element("class5").pop();
-        exclude.element("class6").pop();
-        exclude.element("class7").pop();
-        exclude.element("class8").pop();
-        exclude.element("class9").pop();
-        exclude.pop();
+
+        config.element(LibgdxLogger.INCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class1").pop();
+        config.element(LibgdxLogger.INCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class2").pop();
+        config.element(LibgdxLogger.INCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class3").pop();
+
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class4").pop();
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class5").pop();
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class6").pop();
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class7").pop();
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class8").pop();
+        config.element(LibgdxLogger.EXCLUDE).attribute(LibgdxLogger.CLASS_KEY, "class9").pop();
+
         config.pop();
 
         xmlWriter.flush();

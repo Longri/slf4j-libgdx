@@ -9,12 +9,12 @@ import org.slf4j.impl.LibgdxLogger;
 public class LoggerConfig {
     public int DEFAULT_LOG_LEVEL = LibgdxLogger.LOG_LEVEL_DEBUG;
     public boolean SHOW_DATE_TIME = true;
-    public String DATE_TIME_FORMAT_STR = null;
+    public String DATE_TIME_FORMAT_STR = "dd-MM-yy hh:mm:ss-SSS";
     public boolean SHOW_THREAD_NAME = true;
-    public boolean SHOW_LOG_NAME = true;
-    public boolean SHOW_SHORT_LOG_NAME = false;
+    public boolean SHOW_LOG_NAME = false;
+    public boolean SHOW_SHORT_LOG_NAME = true;
     public String LOG_FILE = "System.err";
-    public boolean LEVEL_IN_BRACKETS = false;
+    public boolean LEVEL_IN_BRACKETS = true;
 
     public void setFrom(final LoggerConfig config) {
         if (config == null) {

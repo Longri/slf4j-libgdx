@@ -72,12 +72,12 @@ class LibgdxLoggerTest {
         // with default values
         assertThat("Wrong default value LOG_FILE", LibgdxLogger.CONFIG.LOG_FILE.equals("System.err"));
         assertThat("Wrong default value  DEFAULT_LOG_LEVEL ", LibgdxLogger.CONFIG.DEFAULT_LOG_LEVEL == libgdxLogger.LOG_LEVEL_DEBUG);
-        assertThat("Wrong default value  SHOW_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_LOG_NAME == true);
-        assertThat("Wrong default value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_SHORT_LOG_NAME == false);
+        assertThat("Wrong default value  SHOW_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_LOG_NAME == false);
+        assertThat("Wrong default value  SHOW_SHORT_LOG_NAME ", LibgdxLogger.CONFIG.SHOW_SHORT_LOG_NAME == true);
         assertThat("Wrong default value  SHOW_DATE_TIME ", LibgdxLogger.CONFIG.SHOW_DATE_TIME == true);
         assertThat("Wrong default value  SHOW_THREAD_NAME ", LibgdxLogger.CONFIG.SHOW_THREAD_NAME == true);
-        assertThat("Wrong default value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR == null);
-        assertThat("Wrong default value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == false);
+        assertThat("Wrong default value  DATE_TIME_FORMAT_STR ", LibgdxLogger.CONFIG.DATE_TIME_FORMAT_STR.equals("dd-MM-yy hh:mm:ss-SSS"));
+        assertThat("Wrong default value  LEVEL_IN_BRACKETS ", LibgdxLogger.CONFIG.LEVEL_IN_BRACKETS == true);
         assertThat("Wrong default value  WARN_LEVEL_STRING ", LibgdxLogger.WARN_LEVEL_STRING.equals("WARN"));
 
 

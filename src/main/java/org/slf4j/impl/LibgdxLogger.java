@@ -240,7 +240,7 @@ public class LibgdxLogger extends MarkerIgnoringBase {
                     //load include and exclude list
                     try {
                         XmlParser.parseExcludeInclude(PROPERTIES_FILE_HANDLE);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

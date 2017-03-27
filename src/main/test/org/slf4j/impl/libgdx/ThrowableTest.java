@@ -87,7 +87,7 @@ public class ThrowableTest {
 
         String logFileText = logFile.readString("utf-8");
 
-        String mustLogFileText = "[DATE] [ERROR] exceptionLogger - Test Error\n" +
+        String mustLogFileText = "[DATE] [main] [ERROR] exceptionLogger - Test Error\n" +
                 "java.lang.ArithmeticException: / by zero\n" +
                 "\tat org.slf4j.impl.libgdx.ThrowableTest.throwableTest(ThrowableTest.java:";
 
@@ -102,8 +102,7 @@ public class ThrowableTest {
         logFileText = logFileText.replace("\r", "").replace("\n", "").replace("\t", "");
         mustLogFileText = mustLogFileText.replace("\r", "").replace("\n", "").replace("\t", "");
 
-        logFileText = logFileText.replace("[main] ERROR", "[ERROR]");
-        logFileText = logFileText.replace(dateString + " [main] DEBUG staticTest - Before initial", "");
+        logFileText = logFileText.replace(dateString + " [main] [DEBUG] staticTest - Before initial", "");
 
 
         for (int i = 0, n = mustLogFileText.length() - 1; i < n; i++) {
