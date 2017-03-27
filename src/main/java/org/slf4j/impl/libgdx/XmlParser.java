@@ -84,22 +84,14 @@ public class XmlParser {
             LibgdxLoggerFactory.EXCLUDE_LIST.clear();
             LibgdxLoggerFactory.INCLUDE_LIST.clear();
 
-            int n;
+            for (int i = 0, n = root.getChildCount(); i < n; i++) {
+                Element ele = root.getChild(i);
 
-            Element include = root.getChildByName("include");
-            if (include != null) {
-                n = include.getChildCount();
-                for (int i = 0; i < n; i++) {
-                    String name = include.getChild(i).getName();
+                if (ele.getName().equals(LibgdxLogger.INCLUDE)) {
+                    String name = ele.getAttribute(LibgdxLogger.CLASS_KEY);
                     LibgdxLoggerFactory.INCLUDE_LIST.add(name);
-                }
-            }
-
-            Element exclude = root.getChildByName("exclude");
-            if (exclude != null) {
-                n = exclude.getChildCount();
-                for (int i = 0; i < n; i++) {
-                    String name = exclude.getChild(i).getName();
+                } else if (ele.getName().equals(LibgdxLogger.EXCLUDE)) {
+                    String name = ele.getAttribute(LibgdxLogger.CLASS_KEY);
                     LibgdxLoggerFactory.EXCLUDE_LIST.add(name);
                 }
             }
