@@ -148,9 +148,11 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
     public static FileHandle PROPERTIES_FILE_HANDLE;
 
-
     public static final String CONFIGURATION_FILE = "libgdxlogger.properties";
     public static final String CONFIGURATION_FILE_XML = "libgdxlogger.xml";
+    public static final String EXCLUDE = "exclude";
+    public static final String INCLUDE = "include";
+    public static final String CLASS_KEY = "class";
 
     private static long START_TIME = System.currentTimeMillis();
     private static final Properties SIMPLE_LOGGER_PROPS = new Properties();
@@ -404,6 +406,11 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
         // Append date-time if so configured
         if (CONFIG.SHOW_DATE_TIME) {
+
+            if (DATE_FORMATTER == null && CONFIG.DATE_TIME_FORMAT_STR != null && !CONFIG.DATE_TIME_FORMAT_STR.isEmpty()) {
+                DATE_FORMATTER = new SimpleDateFormat(CONFIG.DATE_TIME_FORMAT_STR);
+            }
+
             if (DATE_FORMATTER != null) {
                 buf.append(getFormattedDate(logtime));
                 buf.append(' ');
