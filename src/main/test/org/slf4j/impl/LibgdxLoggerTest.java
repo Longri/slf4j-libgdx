@@ -249,4 +249,9 @@ class LibgdxLoggerTest {
 
 
     }
+
+    @Test
+    void throwableTest(){
+
+    }
 }

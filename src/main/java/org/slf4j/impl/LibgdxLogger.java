@@ -39,6 +39,8 @@ import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -452,6 +454,24 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
         // Append the message
         buf.append(message);
+
+        // add throwable
+        if (t != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                t.printStackTrace(pw);
+
+                buf.append("\n");
+                buf.append(sw.toString()); // stack trace as a string
+
+                sw.close();
+                pw.close();
+            } catch (IOException e) {
+                t.printStackTrace();
+            }
+        }
+
 
         switch (level) {
             case LOG_LEVEL_TRACE:
