@@ -509,6 +509,10 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         return dateText;
     }
 
+    public static FileHandle getLogFileHandle() {
+        return logFile;
+    }
+
     private String computeShortName() {
         return name.substring(name.lastIndexOf(".") + 1);
     }

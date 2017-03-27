@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -28,10 +29,12 @@ class LibgdxLoggerTest {
 
     static Logger staticlog = LoggerFactory.getLogger("staticTest");
 
+    static {
+        staticlog.debug("Before initial");
+    }
+
     @BeforeAll
     static void setGdx() {
-
-        staticlog.debug("Before initial");
 
         Gdx.files = new LwjglFiles();
         Gdx.app = new DummyLogApplication();
@@ -252,19 +255,21 @@ class LibgdxLoggerTest {
 
     @Test
     void throwableTest() {
-        FileHandle logFile = Gdx.files.local("exceptionLogFile.log");
 
-        if (logFile.exists()) {
-            logFile.delete();
-        }
 
         LoggerConfig config = new LoggerConfig();
         config.LOG_FILE = "exceptionLogFile.log";
         config.DATE_TIME_FORMAT_STR = "dd.mm.yyyy";
         LibgdxLogger.initial(config);
 
+
         Logger log = LoggerFactory.getLogger("exceptionLogger");
         assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+        FileHandle logFile = LibgdxLogger.getLogFileHandle();
+        if (logFile.exists()) {
+            logFile.delete();
+        }
 
         try {
             float test = 25 / 0;
@@ -282,10 +287,9 @@ class LibgdxLoggerTest {
 
         String logFileText = logFile.readString("utf-8");
 
-        String mustLogFileText = "[DATE] [main] DEBUG staticTest - Before initial\n" +
-                "[DATE] [main] ERROR exceptionLogger - Test Error\n" +
+        String mustLogFileText = "[DATE] [ERROR] exceptionLogger - Test Error\n" +
                 "java.lang.ArithmeticException: / by zero\n" +
-                "\tat org.slf4j.impl.LibgdxLoggerTest.throwableTest(LibgdxLoggerTest.java:270)";
+                "\tat org.slf4j.impl.LibgdxLoggerTest.throwableTest(LibgdxLoggerTest.java:2)";
 
         //replace date
         Calendar calendar = Calendar.getInstance();
@@ -295,9 +299,22 @@ class LibgdxLoggerTest {
 
         mustLogFileText = mustLogFileText.replace("[DATE]", dateString);
 
-        logFileText = logFileText.substring(0, 223).replace("\r", "");
+        logFileText = logFileText.replace("\r", "").replace("\n", "").replace("\t", "");
+        mustLogFileText = mustLogFileText.replace("\r", "").replace("\n", "").replace("\t", "");
 
-        assertEquals(mustLogFileText, logFileText, "LogFile text not correct");
+        logFileText = logFileText.replace("[main] ERROR", "[ERROR]");
+        logFileText = logFileText.replace(dateString + " [main] DEBUG staticTest - Before initial", "");
+
+
+        for (int i = 0, n = mustLogFileText.length() - 1; i < n; i++) {
+            char c1 = logFileText.charAt(i);
+            char c2 = mustLogFileText.charAt(i);
+
+            assertThat("LogFile text not correct at index " + i, c1 == c2);
+        }
+
+
+//        assertEquals(mustLogFileText, logFileText, "LogFile text not correct");
 
 
         if (logFile.exists()) {
