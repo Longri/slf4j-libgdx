@@ -258,6 +258,8 @@ public class LibgdxLogger extends MarkerIgnoringBase {
         // create log file
         if (PROPERTIES_FILE_HANDLE != null && CONFIG.LOG_FILE != null && !CONFIG.LOG_FILE.equals("System.err")) {
             logFile = PROPERTIES_FILE_HANDLE.parent().child(CONFIG.LOG_FILE);
+        } else if (CONFIG.LOG_FILE != null && !CONFIG.LOG_FILE.equals("System.err")) {
+            logFile = Gdx.files.local(CONFIG.LOG_FILE);
         } else {
             logFile = null;
         }

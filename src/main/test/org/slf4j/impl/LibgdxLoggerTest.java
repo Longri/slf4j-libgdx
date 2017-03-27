@@ -251,7 +251,58 @@ class LibgdxLoggerTest {
     }
 
     @Test
-    void throwableTest(){
+    void throwableTest() {
+        FileHandle logFile = Gdx.files.local("exceptionLogFile.log");
+
+        if (logFile.exists()) {
+            logFile.delete();
+        }
+
+        LoggerConfig config = new LoggerConfig();
+        config.LOG_FILE = "exceptionLogFile.log";
+        config.DATE_TIME_FORMAT_STR = "dd.mm.yyyy";
+        LibgdxLogger.initial(config);
+
+        Logger log = LoggerFactory.getLogger("exceptionLogger");
+        assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+        try {
+            float test = 25 / 0;
+        } catch (Exception e) {
+            log.error("Test Error", e);
+        }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertThat("LogFile must exist", logFile.exists());
+
+        String logFileText = logFile.readString("utf-8");
+
+        String mustLogFileText = "[DATE] [main] DEBUG staticTest - Before initial\n" +
+                "[DATE] [main] ERROR exceptionLogger - Test Error\n" +
+                "java.lang.ArithmeticException: / by zero\n" +
+                "\tat org.slf4j.impl.LibgdxLoggerTest.throwableTest(LibgdxLoggerTest.java:270)";
+
+        //replace date
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        SimpleDateFormat ft = new SimpleDateFormat("dd.mm.yyyy");
+        String dateString = ft.format(date);
+
+        mustLogFileText = mustLogFileText.replace("[DATE]", dateString);
+
+        logFileText = logFileText.substring(0, 223).replace("\r", "");
+
+        assertEquals(mustLogFileText, logFileText, "LogFile text not correct");
+
+
+        if (logFile.exists()) {
+            logFile.delete();
+        }
 
     }
 }
