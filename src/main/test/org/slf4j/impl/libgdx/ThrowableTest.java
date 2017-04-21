@@ -112,6 +112,73 @@ public class ThrowableTest {
             assertThat("LogFile text not correct at index " + i, c1 == c2);
         }
 
+
+        if (logFile.exists()) {
+            logFile.delete();
+        }
+
+    }
+
+    @Test
+    void throwableTestFormattedString() {
+
+        LoggerConfig config = new LoggerConfig();
+        config.LOG_FILE = "exceptionLogFile.log";
+        config.DATE_TIME_FORMAT_STR = "dd.mm.yyyy";
+        LibgdxLogger.initial(config);
+
+
+        Logger log = LoggerFactory.getLogger("exceptionLogger");
+        assertThat("Must be initialized", LibgdxLogger.INITIALIZED);
+
+        FileHandle logFile = LibgdxLogger.getLogFileHandle();
+        if (logFile.exists()) {
+            logFile.delete();
+        }
+
+        try {
+            float test = 25 / 0;
+        } catch (Exception e) {
+            log.error("Test Error  value {}", 123, e);
+        }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertThat("LogFile must exist", logFile.exists());
+
+        String logFileText = logFile.readString("utf-8");
+
+        String mustLogFileText = "[DATE] [main] [ERROR] exceptionLogger - Test Error  value 123\n" +
+                "java.lang.ArithmeticException: / by zero\n" +
+                "\tat org.slf4j.impl.libgdx.ThrowableTest.throwableTestFormattedString(ThrowableTest.java:";
+
+        //replace date
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        SimpleDateFormat ft = new SimpleDateFormat("dd.mm.yyyy");
+        String dateString = ft.format(date);
+
+        mustLogFileText = mustLogFileText.replace("[DATE]", dateString);
+
+        logFileText = logFileText.replace("\r", "").replace("\n", "").replace("\t", "");
+        mustLogFileText = mustLogFileText.replace("\r", "").replace("\n", "").replace("\t", "");
+
+        logFileText = logFileText.replace(dateString + " [main] [DEBUG] staticTest - Before initial", "");
+
+
+        for (int i = 0, n = mustLogFileText.length() - 1; i < n; i++) {
+            char c1 = logFileText.charAt(i);
+            char c2 = mustLogFileText.charAt(i);
+
+            assertThat("LogFile text not correct at index " + i, c1 == c2);
+        }
+
+//        assertEquals(mustLogFileText,logFileText);
+
         if (logFile.exists()) {
             logFile.delete();
         }

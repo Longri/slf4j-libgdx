@@ -16,6 +16,8 @@
 package de.longri.cachebox3.utils.lists;
 
 
+import com.badlogic.gdx.utils.Array;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -26,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadStack<T extends CancelRunable>  {
 
-    private final CB_List<T> items;
+    private final Array<T> items;
     private ExecutorService executor;
     private final int maxItems;
     private boolean isDisposed = false;
@@ -37,7 +39,7 @@ public class ThreadStack<T extends CancelRunable>  {
     }
 
     public ThreadStack(int maxItemSize) {
-        items = new CB_List<T>();
+        items = new Array<T>();
         maxItems = maxItemSize;
         controlThread.start();
     }
@@ -46,7 +48,7 @@ public class ThreadStack<T extends CancelRunable>  {
         @Override
         public void run() {
             while (!isDisposed) {
-                if (executor == null && !items.isEmpty()) {
+                if (executor == null && items.size!=0) {
                     //start
                     executor = Executors.newFixedThreadPool(1, new ThreadFactory() {
                         @Override
@@ -59,7 +61,7 @@ public class ThreadStack<T extends CancelRunable>  {
                     });
                     synchronized (items) {
                         T item = items.first();
-                        items.remove(item);
+                        items.removeValue(item,true);
                         actualRunning = item;
                         executor.execute(item);
                     }
@@ -89,7 +91,7 @@ public class ThreadStack<T extends CancelRunable>  {
         synchronized (items) {
             if (items.size >= maxItems) {
                 T item = items.first();
-                items.remove(item);
+                this.items.removeValue(item,true);
             }
             items.add(runnable);
         }
@@ -113,7 +115,9 @@ public class ThreadStack<T extends CancelRunable>  {
 
     public boolean isReadyAndEmpty() {
         synchronized (items) {
-            return executor == null && items.isEmpty();
+            return executor == null && items.size==0;
         }
     }
+
+
 }
