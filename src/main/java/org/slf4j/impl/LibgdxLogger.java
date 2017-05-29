@@ -822,21 +822,24 @@ public class LibgdxLogger extends MarkerIgnoringBase {
 
 
     protected void writeStore() {
-        LibgdxLoggerFactory.reset();
-        for (LogStructure log : store) {
-            if (log.logger.logger == null) {
-                log.logger.logger = LibgdxLoggerFactory.getInstance(log.logger.name);
+        synchronized (storeWrited) {
+            if (storeWrited.get()) return;
+            LibgdxLoggerFactory.reset();
+            for (LogStructure log : store) {
+                if (log.logger.logger == null) {
+                    log.logger.logger = LibgdxLoggerFactory.getInstance(log.logger.name);
+                }
+                log.logger.finalLog(log.level, log.massage, log.t, log.now, log.mills);
             }
-            log.logger.finalLog(log.level, log.massage, log.t, log.now, log.mills);
-        }
-        if (this instanceof PendingLogger) {
-            if (((PendingLogger) this).logger == null) {
-                ((PendingLogger) this).logger = LibgdxLoggerFactory.getInstance(this.name);
+            if (this instanceof PendingLogger) {
+                if (((PendingLogger) this).logger == null) {
+                    ((PendingLogger) this).logger = LibgdxLoggerFactory.getInstance(this.name);
+                }
             }
+            storeWrited.set(true);
+            if (store != null) store.clear();
+            store = null;
         }
-        storeWrited.set(true);
-        store.clear();
-        store = null;
     }
 
 

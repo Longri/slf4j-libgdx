@@ -15,7 +15,7 @@
     <name>SLF4J Binding for libgdx</name>
     <description>SLF4J binding for libgdx</description>
     <url>http://www.slf4j.org</url>
-    <version>1.9.6-SNAPSHOT</version>
+    <version>1.9.7-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
