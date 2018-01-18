@@ -1,13 +1,20 @@
 package org.slf4j.impl;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.TimeUtils;
 
 /**
  * Created by Longri on 05.02.17.
  */
 public class DummyLogApplication implements Application {
 
+
+    public DummyLogApplication() {
+        initialize();
+    }
 
     // implementation for logging only
 
@@ -129,9 +136,73 @@ public class DummyLogApplication implements Application {
         return null;
     }
 
+    protected Thread mainLoopThread;
+
+    private void initialize() {
+        mainLoopThread = new Thread("HeadlessApplication") {
+            @Override
+            public void run() {
+                try {
+                    DummyLogApplication.this.mainLoop();
+                } catch (Throwable t) {
+                    if (t instanceof RuntimeException)
+                        throw (RuntimeException) t;
+                    else
+                        throw new GdxRuntimeException(t);
+                }
+            }
+        };
+        mainLoopThread.start();
+    }
+
+
+    protected boolean running = true;
+    private final long renderInterval = 0;
+
+    void mainLoop() {
+
+        long t = TimeUtils.nanoTime() + renderInterval;
+        if (renderInterval >= 0f) {
+            while (running) {
+                final long n = TimeUtils.nanoTime();
+                if (t > n) {
+                    try {
+                        Thread.sleep((t - n) / 1000000);
+                    } catch (InterruptedException e) {
+                    }
+                    t = TimeUtils.nanoTime() + renderInterval;
+                } else
+                    t = n + renderInterval;
+
+                executeRunnables();
+
+                // If one of the runnables set running to false, for example after an exit().
+                if (!running) break;
+            }
+        }
+    }
+
+
+    protected final Array<Runnable> runnables = new Array<Runnable>();
+    protected final Array<Runnable> executedRunnables = new Array<Runnable>();
+
+    public boolean executeRunnables() {
+        synchronized (runnables) {
+            for (int i = runnables.size - 1; i >= 0; i--)
+                executedRunnables.add(runnables.get(i));
+            runnables.clear();
+        }
+        if (executedRunnables.size == 0) return false;
+        for (int i = executedRunnables.size - 1; i >= 0; i--)
+            executedRunnables.removeIndex(i).run();
+        return true;
+    }
+
     @Override
     public void postRunnable(Runnable runnable) {
-
+        synchronized (runnables) {
+            runnables.add(runnable);
+        }
     }
 
     @Override
