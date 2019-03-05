@@ -1,20 +1,23 @@
 package org.slf4j.impl.libgdx;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationLogger;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.SharedLibraryLoader;
 import com.badlogic.gdx.utils.XmlWriter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.DummyLogApplication;
 import org.slf4j.impl.EmptyLogger;
 import org.slf4j.impl.LibgdxLogger;
 import org.slf4j.impl.LibgdxLoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -28,9 +31,16 @@ class XmlParserTest {
 
     @BeforeAll
     static void setGdx() {
-        Gdx.files = new LwjglFiles();
-        Gdx.app = new DummyLogApplication();
-        Gdx.app.setApplicationLogger(new LwjglApplicationLogger());
+        File nativeFile = new File("./native/gdx-platform-1.9.9-natives-desktop.jar");
+        SharedLibraryLoader sharedLibraryLoader = new SharedLibraryLoader(nativeFile.getAbsolutePath());
+        sharedLibraryLoader.load("gdx");
+        Gdx.app = new HeadlessApplication(new Game() {
+            @Override
+            public void create() {
+
+            }
+        });
+        Gdx.files = Gdx.app.getFiles();
     }
 
 
@@ -153,9 +163,6 @@ class XmlParserTest {
 
     @AfterAll
     static void removeFiles() {
-        Gdx.files = new LwjglFiles();
-        Gdx.app = new DummyLogApplication();
-        Gdx.app.setApplicationLogger(new LwjglApplicationLogger());
         FileHandle xmlFile = Gdx.files.local(LibgdxLogger.CONFIGURATION_FILE_XML);
         xmlFile.delete();
     }

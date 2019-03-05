@@ -11,7 +11,7 @@ A libgdx log implemention of slfj4
 
 Modification
 
-1.replace the default syso to Gdx log
+1.replace the default sysio to Gdx log
 
 2.set the default log level to debug
 
